@@ -23,3 +23,10 @@ body,
 .task > ::-webkit-scrollbar-thumb {
   @apply bg-sky-500 rounded-xl;
 }
+
+.clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
