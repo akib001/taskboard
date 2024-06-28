@@ -1,28 +1,17 @@
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { initialBoardState } from "../utils/constants";
 import Column from "./Column";
 import { IBoardState, ITask } from "../utils/types";
-import AddEditModal from "./AddEditModal";
 import { generateId } from "../utils/helpers";
 import { ColumnTypes } from "../utils/enums";
 import { ContextMenu } from "./ContextMenu";
-import TaskCard from "./Task";
 
-const KanbanBoard = () => {
+const KanbanBoard: React.FC = () => {
   const [board, setBoard] = useState<IBoardState>(initialBoardState);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<ITask | undefined>(undefined);
   const [contextMenu, setContextMenu] = useState<{
     task: ITask;
     position: { x: number; y: number };
   } | null>(null);
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    if (editingTask) {
-      setEditingTask(undefined);
-    }
-  };
 
   const handleContextMenu = useCallback(
     (event: React.MouseEvent, task: ITask) => {
@@ -66,107 +55,76 @@ const KanbanBoard = () => {
     closeContextMenu();
   }, []);
 
-  const handleSaveTask = (task: ITask) => {
-    if (task.id) {
-      const taskId = task.id;
+  const handleCreateOrEditTask = (task: ITask) => {
+    if (task.id in board.tasks) {
       // Edit existing task
       setBoard((prevState) => ({
         ...prevState,
         tasks: {
           ...prevState.tasks,
-          [taskId]: {
-            ...prevState.tasks[taskId],
-            ...task,
-          },
+          [task.id]: task,
         },
       }));
     } else {
+      // Create new task
       const newTaskId = generateId();
-      const newColumnId = ColumnTypes.NEW;
-
-      setBoard((prevState) => {
-        return {
-          ...prevState,
-          tasks: {
-            ...prevState.tasks,
-            [newTaskId]: {
-              ...task,
-              id: newTaskId,
-              columnId: newColumnId,
-            },
+      setBoard((prevState) => ({
+        ...prevState,
+        tasks: {
+          ...prevState.tasks,
+          [newTaskId]: { ...task, id: newTaskId },
+        },
+        columns: {
+          ...prevState.columns,
+          [task.columnId]: {
+            ...prevState.columns[task.columnId],
+            taskIds: [newTaskId, ...prevState.columns[task.columnId].taskIds],
           },
-          columns: {
-            ...prevState.columns,
-            [newColumnId]: {
-              ...prevState.columns[newColumnId],
-              taskIds: [...prevState.columns[newColumnId].taskIds, newTaskId],
-            },
-          },
-        };
-      });
+        },
+      }));
     }
   };
 
-  const handleCreateOrEditTask = (task: ITask | null) => {
-    if (task) {
-      setEditingTask(task);
-    }
-    setIsModalOpen(true);
+  const handleDeleteTask = (taskId: string) => {
+    setBoard((prevState) => {
+      const { [taskId]: deletedTask, ...remainingTasks } = prevState.tasks;
+      const updatedColumns = { ...prevState.columns };
+      updatedColumns[deletedTask.columnId].taskIds = updatedColumns[
+        deletedTask.columnId
+      ].taskIds.filter((id) => id !== taskId);
+
+      return {
+        ...prevState,
+        tasks: remainingTasks,
+        columns: updatedColumns,
+      };
+    });
   };
 
   return (
-    <div
-      className="
-    m-auto
-    flex
-    min-h-screen
-    w-full
-    items-center
-    overflow-x-auto
-    overflow-y-hidden
-    px-[40px]
-"
-    >
+    <div className="flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px] bg-black">
       <div className="m-auto flex gap-4">
-        <div className="flex gap-4">
-          {board.columnOrder.map((columnId) => {
-            const tasks = board.columns[columnId].taskIds;
-            return (
-              <Column
-                key={columnId}
-                column={board.columns[columnId]}
-                createOrEditTask={handleCreateOrEditTask}
-                taskCount={tasks.length}
-              >
-                {tasks
-                  .map((taskId) => board.tasks[taskId])
-                  .map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      createOrEditTask={handleCreateOrEditTask}
-                      onContextMenu={handleContextMenu}
-                    />
-                  ))}
-              </Column>
-            );
-          })}
-        </div>
-        {contextMenu && (
-          <ContextMenu
-            task={contextMenu.task}
-            position={contextMenu.position}
-            onMove={moveTask}
-            onClose={closeContextMenu}
+        {board.columnOrder.map((columnId) => (
+          <Column
+            key={columnId}
+            column={board.columns[columnId]}
+            tasks={board.columns[columnId].taskIds.map(
+              (taskId) => board.tasks[taskId]
+            )}
+            createOrEditTask={handleCreateOrEditTask}
+            onDeleteTask={handleDeleteTask}
+            onContextMenu={handleContextMenu}
           />
-        )}
-        <AddEditModal
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          onSave={handleSaveTask}
-          task={editingTask}
-        />
+        ))}
       </div>
+      {contextMenu && (
+        <ContextMenu
+          task={contextMenu.task}
+          position={contextMenu.position}
+          onMove={moveTask}
+          onClose={closeContextMenu}
+        />
+      )}
     </div>
   );
 };
