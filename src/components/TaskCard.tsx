@@ -104,7 +104,7 @@ const TaskCard: React.FC<TaskProps> = ({
   const getStatusWiseStyle = () => {
     if (task.columnId === ColumnTypes.NEW) {
       return "border-l-orange-500";
-    } else if (task.columnId === ColumnTypes.IN_PROGRESS) {
+    } else if (task.columnId === ColumnTypes.ON_GOING) {
       return "border-l-blue-500";
     } else {
       return "border-l-green-500";
@@ -142,7 +142,7 @@ const TaskCard: React.FC<TaskProps> = ({
   };
 
   const timeStatus =
-    task.dueDate && task.columnId === ColumnTypes.IN_PROGRESS
+    task.dueDate && task.columnId === ColumnTypes.ON_GOING
       ? calculateTimeStatus(task.dueDate)
       : null;
 
@@ -186,7 +186,7 @@ const TaskCard: React.FC<TaskProps> = ({
             onChange={handleDescriptionChange}
             className="bg-transparent text-gray-400 max-w-72 text-sm outline-none border-none max-h-52 resize-none "
           />
-          {task.columnId === ColumnTypes.IN_PROGRESS && (
+          {task.columnId === ColumnTypes.ON_GOING && (
             <input
               ref={dueDateRef}
               type="datetime-local"

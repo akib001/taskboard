@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { initialBoardState } from "../utils/constants";
+import { defaultBoardStatate } from "../utils/constants";
 import Column from "./Column";
 import { IBoardState, ITask } from "../utils/types";
 import { generateId } from "../utils/helpers";
@@ -7,7 +7,7 @@ import { ColumnTypes } from "../utils/enums";
 import { ContextMenu } from "./ContextMenu";
 
 const KanbanBoard: React.FC = () => {
-  const [board, setBoard] = useState<IBoardState>(initialBoardState);
+  const [board, setBoard] = useState<IBoardState>(defaultBoardStatate);
   const [contextMenu, setContextMenu] = useState<{
     task: ITask;
     position: { x: number; y: number };
@@ -37,8 +37,8 @@ const KanbanBoard: React.FC = () => {
       const updatedTask = {
         ...task,
         columnId: targetColumn,
-        // Clear dueDate if moving to IN_PROGRESS column
-        dueDate: targetColumn === ColumnTypes.IN_PROGRESS ? "" : task.dueDate,
+        // Clear dueDate if moving to ON_GOING column
+        dueDate: targetColumn === ColumnTypes.ON_GOING ? "" : task.dueDate,
       };
 
       return {

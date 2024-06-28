@@ -1,7 +1,7 @@
 import { ColumnTypes } from "./enums";
 import { IBoardState } from "./types";
 
-export const initialBoardState: IBoardState = {
+export const defaultBoardStatate: IBoardState = {
   tasks: {
     "1": {
       id: "1",
@@ -24,12 +24,12 @@ export const initialBoardState: IBoardState = {
       name: "New",
       taskIds: ["1", "2"],
     },
-    [ColumnTypes.IN_PROGRESS]: {
-      id: ColumnTypes.IN_PROGRESS,
-      name: "In Progress",
+    [ColumnTypes.ON_GOING]: {
+      id: ColumnTypes.ON_GOING,
+      name: "On Going",
       taskIds: [],
     },
     [ColumnTypes.DONE]: { id: ColumnTypes.DONE, name: "Done", taskIds: [] },
   },
-  columnOrder: [ColumnTypes.NEW, ColumnTypes.IN_PROGRESS, ColumnTypes.DONE],
+  columnOrder: [ColumnTypes.NEW, ColumnTypes.ON_GOING, ColumnTypes.DONE],
 };
