@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ColumnTypes } from "../utils/enums";
 import { ITask } from "../utils/types";
 import { defaultBoardStatate } from "../utils/constants";
@@ -20,6 +20,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     (columnId) => columnId !== task.columnId
   );
   const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState({ left: 0, top: 0 });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,16 +35,34 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     };
   }, [onClose]);
 
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    const menuWidthForMobile = 176;
+
+    if (isMobile) {
+      setMenuPosition({
+        left: Math.max(0, position.x - menuWidthForMobile) - 8,
+        top: position.y + 5,
+      });
+    } else {
+      setMenuPosition({
+        left: position.x + 8,
+        top: position.y + 8,
+      });
+    }
+  }, [position]);
+
   return (
     <div
       ref={menuRef}
       className="fixed z-50 bg-columnBackgroundColor border border-gray-700 rounded-md shadow-lg"
       style={{
-        top: `${position.y + 8}px`,
-        left: `${position.x + 8}px`,
+        left: `${menuPosition.left}px`,
+        top: `${menuPosition.top}px`,
+        maxWidth: "208px",
       }}
     >
-      <div className="max-w-52">
+      <div className="max-w-44 lg:max-w-52">
         {menuOptions.map((column) => (
           <button
             key={column}
