@@ -43,7 +43,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         left: `${position.x + 8}px`,
       }}
     >
-      <div>
+      <div className="max-w-52">
         {menuOptions.map((column) => (
           <button
             key={column}
