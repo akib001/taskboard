@@ -1,14 +1,20 @@
 import React from "react";
-import TaskCard from "./Task";
 import { IColumn, ITask } from "../utils/types";
+import { ColumnTypes } from "../utils/enums";
 
 interface ColumnProps {
-  tasks: ITask[];
   column: IColumn;
   createOrEditTask: (task: ITask | null) => void;
+  children: React.ReactNode;
+  taskCount: number;
 }
 
-const Column: React.FC<ColumnProps> = ({ tasks, column, createOrEditTask }) => {
+const Column: React.FC<ColumnProps> = ({
+  column,
+  createOrEditTask,
+  taskCount,
+  children,
+}) => {
   return (
     <div
       className="
@@ -51,7 +57,7 @@ flex-col
     rounded-full
     "
           >
-            {tasks.length}
+            {taskCount}
           </div>
           {column.name}
         </div>
@@ -59,24 +65,20 @@ flex-col
 
       {/* Column task container */}
       <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto">
-        {tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            createOrEditTask={createOrEditTask}
-          />
-        ))}
+        {children}
       </div>
       {/* Column footer */}
-      <button
-        className="flex gap-2 items-center border-columnBackgroundColor border-2 rounded-md p-4 border-x-columnBackgroundColor hover:bg-mainBackgroundColor hover:text-rose-500 active:bg-black"
-        onClick={() => {
-          createOrEditTask(null);
-        }}
-      >
-        {/* <PlusIcon /> */}
-        Add task
-      </button>
+      {column.id === ColumnTypes.NEW && (
+        <button
+          className="flex gap-2 items-center border-columnBackgroundColor border-2 rounded-md p-4 border-x-columnBackgroundColor hover:bg-mainBackgroundColor hover:text-rose-500 active:bg-black"
+          onClick={() => {
+            createOrEditTask(null);
+          }}
+        >
+          {/* <PlusIcon /> */}
+          Add task
+        </button>
+      )}
     </div>
   );
 };

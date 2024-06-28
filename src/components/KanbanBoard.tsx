@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { initialBoardState } from "../utils/constants";
 import Column from "./Column";
 import { IBoardState, ITask } from "../utils/types";
 import AddEditModal from "./AddEditModal";
 import { generateId } from "../utils/helpers";
 import { ColumnTypes } from "../utils/enums";
+import { ContextMenu } from "./ContextMenu";
+import TaskCard from "./Task";
 
 const KanbanBoard = () => {
   const [board, setBoard] = useState<IBoardState>(initialBoardState);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<ITask | undefined>(undefined);
+  const [contextMenu, setContextMenu] = useState<{
+    task: ITask;
+    position: { x: number; y: number };
+  } | null>(null);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -17,6 +23,48 @@ const KanbanBoard = () => {
       setEditingTask(undefined);
     }
   };
+
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent, task: ITask) => {
+      setContextMenu({
+        task,
+        position: { x: event.clientX, y: event.clientY },
+      });
+    },
+    []
+  );
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const moveTask = useCallback((taskId: string, targetColumn: ColumnTypes) => {
+    setBoard((prevState) => {
+      const task = prevState.tasks[taskId];
+      const sourceColumn = prevState.columns[task.columnId];
+      const targetColumnObj = prevState.columns[targetColumn];
+
+      return {
+        ...prevState,
+        tasks: {
+          ...prevState.tasks,
+          [taskId]: { ...task, columnId: targetColumn },
+        },
+        columns: {
+          ...prevState.columns,
+          [sourceColumn.id]: {
+            ...sourceColumn,
+            taskIds: sourceColumn.taskIds.filter((id) => id !== taskId),
+          },
+          [targetColumn]: {
+            ...targetColumnObj,
+            taskIds: [taskId, ...targetColumnObj.taskIds],
+          },
+        },
+      };
+    });
+    closeContextMenu();
+  }, []);
 
   const handleSaveTask = (task: ITask) => {
     if (task.id) {
@@ -51,7 +99,7 @@ const KanbanBoard = () => {
             ...prevState.columns,
             [newColumnId]: {
               ...prevState.columns[newColumnId],
-              taskIds: [newTaskId, ...prevState.columns[newColumnId].taskIds],
+              taskIds: [...prevState.columns[newColumnId].taskIds, newTaskId],
             },
           },
         };
@@ -68,6 +116,7 @@ const KanbanBoard = () => {
 
   return (
     <div
+      onClick={closeContextMenu}
       className="
     m-auto
     flex
@@ -81,17 +130,37 @@ const KanbanBoard = () => {
     >
       <div className="m-auto flex gap-4">
         <div className="flex gap-4">
-          {board.columnOrder.map((columnId) => (
-            <Column
-              key={columnId}
-              column={board.columns[columnId]}
-              tasks={board.columns[columnId].taskIds.map(
-                (taskId) => board.tasks[taskId]
-              )}
-              createOrEditTask={handleCreateOrEditTask}
-            />
-          ))}
+          {board.columnOrder.map((columnId) => {
+            const tasks = board.columns[columnId].taskIds;
+            return (
+              <Column
+                key={columnId}
+                column={board.columns[columnId]}
+                createOrEditTask={handleCreateOrEditTask}
+                taskCount={tasks.length}
+              >
+                {tasks
+                  .map((taskId) => board.tasks[taskId])
+                  .map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      createOrEditTask={handleCreateOrEditTask}
+                      onContextMenu={handleContextMenu}
+                    />
+                  ))}
+              </Column>
+            );
+          })}
         </div>
+        {contextMenu && (
+          <ContextMenu
+            task={contextMenu.task}
+            position={contextMenu.position}
+            onMove={moveTask}
+            onClose={closeContextMenu}
+          />
+        )}
         <AddEditModal
           isOpen={isModalOpen}
           onClose={closeModal}
