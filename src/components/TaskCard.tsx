@@ -155,7 +155,7 @@ const TaskCard: React.FC<TaskProps> = ({
               adjustTextareaHeight(descriptionRef.current);
             }}
             placeholder="Title"
-            className="bg-transparent max-w-72 h-6 outline-none border-none resize-none"
+            className="bg-transparent max-w-[calc(100%-20px)] h-6 outline-none border-none resize-none"
           />
           <textarea
             ref={descriptionRef}
@@ -166,7 +166,7 @@ const TaskCard: React.FC<TaskProps> = ({
               adjustTextareaHeight(titleRef.current);
               adjustTextareaHeight(descriptionRef.current);
             }}
-            className="bg-transparent text-gray-400 h-5 mt-1 max-w-72 text-sm outline-none border-none resize-none"
+            className="bg-transparent text-gray-400 h-5 mt-1 max-w-[calc(100%-20px)] text-sm outline-none border-none resize-none"
           />
           {task.columnId === ColumnTypes.ON_GOING && (
             <input
@@ -178,7 +178,7 @@ const TaskCard: React.FC<TaskProps> = ({
               onChange={(e) =>
                 createOrEditTask({ ...task, dueDate: e.target.value })
               }
-              className="bg-transparent text-sm mt-1 w-fit outline-none border-none"
+              className="bg-transparent text-sm mt-1 max-w-52 outline-none border-none"
             />
           )}
         </>
@@ -186,13 +186,13 @@ const TaskCard: React.FC<TaskProps> = ({
         <>
           <p
             onClick={() => handleFieldClick("title")}
-            className="min-h-6 w-full max-w-72 overflow-hidden whitespace-pre-wrap break-words text-ellipsis cursor-pointer select-none clamp-3"
+            className="min-h-6 w-full max-w-[calc(100%-20px)] overflow-hidden whitespace-pre-wrap break-words text-ellipsis cursor-pointer select-none clamp-3"
           >
             {task.title}
           </p>
           <p
             onClick={() => handleFieldClick("description")}
-            className="min-h-5 w-full max-w-72 text-sm text-gray-400 mt-1 break-words overflow-hidden whitespace-pre-wrap text-ellipsis cursor-pointer select-none clamp-3"
+            className="min-h-5 w-full max-w-[calc(100%-20px)] text-sm text-gray-400 mt-1 break-words overflow-hidden whitespace-pre-wrap text-ellipsis cursor-pointer select-none clamp-3"
           >
             {task.description}
           </p>
