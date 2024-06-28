@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { ColumnTypes } from "../utils/enums";
-import { ITask } from "../utils/types";
+import { IBoardState, ITask } from "../utils/types";
 import { defaultBoardState } from "../utils/constants";
 
 interface ContextMenuProps {
@@ -9,6 +9,7 @@ interface ContextMenuProps {
   onMove: (taskId: string, targetColumn: ColumnTypes) => void;
   onDeleteTask: (taskId: string) => void;
   onClose: () => void;
+  board: IBoardState;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -17,8 +18,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onMove,
   onClose,
   onDeleteTask,
+  board
 }) => {
-  const menuOptions = defaultBoardState.columnOrder.filter(
+  const menuOptions = board.columnOrder.filter(
     (columnId) => columnId !== task.columnId
   );
   const menuRef = useRef<HTMLDivElement>(null);
