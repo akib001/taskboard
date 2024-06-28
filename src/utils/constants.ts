@@ -1,7 +1,7 @@
 import { ColumnTypes } from "./enums";
 import { IBoardState } from "./types";
 
-export const defaultBoardStatate: IBoardState = {
+export const defaultBoardState: IBoardState = {
   tasks: {
     "1": {
       id: "1",

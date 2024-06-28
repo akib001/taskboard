@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ColumnTypes } from "../utils/enums";
 import { ITask } from "../utils/types";
-import { defaultBoardStatate } from "../utils/constants";
+import { defaultBoardState } from "../utils/constants";
 
 interface ContextMenuProps {
   task: ITask;
@@ -16,7 +16,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onMove,
   onClose,
 }) => {
-  const menuOptions = defaultBoardStatate.columnOrder.filter(
+  const menuOptions = defaultBoardState.columnOrder.filter(
     (columnId) => columnId !== task.columnId
   );
   const menuRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 transition-colors duration-150 ease-in-out"
           >
-            Move to {defaultBoardStatate.columns[column].name}
+            Move to {defaultBoardState.columns[column].name}
           </button>
         ))}
       </div>

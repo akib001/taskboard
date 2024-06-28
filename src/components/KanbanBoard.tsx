@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { defaultBoardStatate } from "../utils/constants";
+import { defaultBoardState } from "../utils/constants";
 import Column from "./Column";
 import { IBoardState, ITask } from "../utils/types";
 import { generateId } from "../utils/helpers";
@@ -7,7 +7,7 @@ import { ColumnTypes } from "../utils/enums";
 import { ContextMenu } from "./ContextMenu";
 
 const KanbanBoard: React.FC = () => {
-  const [board, setBoard] = useState<IBoardState>(defaultBoardStatate);
+  const [board, setBoard] = useState<IBoardState>(defaultBoardState);
   const [contextMenu, setContextMenu] = useState<{
     task: ITask;
     position: { x: number; y: number };
