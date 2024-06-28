@@ -116,7 +116,6 @@ const KanbanBoard = () => {
 
   return (
     <div
-      onClick={closeContextMenu}
       className="
     m-auto
     flex

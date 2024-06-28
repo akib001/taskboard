@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ColumnTypes } from "../utils/enums";
 import { ITask } from "../utils/types";
 import { initialBoardState } from "../utils/constants";
@@ -19,13 +19,28 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const menuOptions = initialBoardState.columnOrder.filter(
     (columnId) => columnId !== task.columnId
   );
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
   return (
     <div
+      ref={menuRef}
       className="fixed z-50 bg-columnBackgroundColor border border-gray-700 rounded-md shadow-lg"
       style={{
-        top: `${position.y}px`,
-        left: `${position.x}px`,
+        top: `${position.y + 8}px`,
+        left: `${position.x + 8}px`,
       }}
     >
       <div>

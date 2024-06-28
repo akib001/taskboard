@@ -26,7 +26,7 @@ const TaskCard: React.FC<TaskProps> = ({
   return (
     <div
       onContextMenu={handleContextMenu}
-      className="bg-mainBackgroundColor p-2.5 h-[100px] min-h-[100px] flex flex-col text-left rounded-xl hover:ring-2 hover:ring-inset hover:ring-rose-500 cursor-grab relative task"
+      className="bg-mainBackgroundColor p-2.5 h-[100px] min-h-[100px] flex flex-col text-left rounded-xl hover:ring-2 hover:ring-inset hover:ring-rose-500 cursor-pointer relative task"
     >
       <p
         onClick={() => createOrEditTask(task)}

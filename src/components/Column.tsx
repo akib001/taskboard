@@ -32,7 +32,6 @@ flex-col
   bg-mainBackgroundColor
   text-md
   h-[60px]
-  cursor-grab
   rounded-md
   rounded-b-none
   p-3
