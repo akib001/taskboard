@@ -24,15 +24,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [onClose]);
 
@@ -49,7 +52,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         maxWidth: "208px",
       }}
     >
-      <div className="max-w-44 lg:max-w-52">
+      <div className="min-w-44 max-w-52">
         {menuOptions.map((column) => (
           <button
             key={column}
