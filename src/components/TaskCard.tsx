@@ -186,7 +186,7 @@ const TaskCard: React.FC<TaskProps> = ({
             onChange={handleDescriptionChange}
             className="bg-transparent text-gray-400 max-w-72 text-sm outline-none border-none max-h-52 resize-none "
           />
-          {(task.columnId === ColumnTypes.IN_PROGRESS || task.dueDate) && (
+          {task.columnId === ColumnTypes.IN_PROGRESS && (
             <input
               ref={dueDateRef}
               type="datetime-local"

@@ -33,11 +33,19 @@ const KanbanBoard: React.FC = () => {
       const sourceColumn = prevState.columns[task.columnId];
       const targetColumnObj = prevState.columns[targetColumn];
 
+      // Create an updated task object
+      const updatedTask = {
+        ...task,
+        columnId: targetColumn,
+        // Clear dueDate if moving to IN_PROGRESS column
+        dueDate: targetColumn === ColumnTypes.IN_PROGRESS ? "" : task.dueDate,
+      };
+
       return {
         ...prevState,
         tasks: {
           ...prevState.tasks,
-          [taskId]: { ...task, columnId: targetColumn },
+          [taskId]: updatedTask,
         },
         columns: {
           ...prevState.columns,
