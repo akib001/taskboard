@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { ColumnTypes } from "../utils/enums";
 import { ITask } from "../utils/types";
 import { defaultBoardState } from "../utils/constants";
@@ -7,6 +7,7 @@ interface ContextMenuProps {
   task: ITask;
   position: { x: number; y: number };
   onMove: (taskId: string, targetColumn: ColumnTypes) => void;
+  onDeleteTask: (taskId: string) => void;
   onClose: () => void;
 }
 
@@ -15,12 +16,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   position,
   onMove,
   onClose,
+  onDeleteTask,
 }) => {
   const menuOptions = defaultBoardState.columnOrder.filter(
     (columnId) => columnId !== task.columnId
   );
   const menuRef = useRef<HTMLDivElement>(null);
-  const [menuPosition, setMenuPosition] = useState({ left: 0, top: 0 });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -35,30 +36,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     };
   }, [onClose]);
 
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    const menuWidthForMobile = 176;
-
-    if (isMobile) {
-      setMenuPosition({
-        left: Math.max(0, position.x - menuWidthForMobile) - 8,
-        top: position.y + 5,
-      });
-    } else {
-      setMenuPosition({
-        left: position.x + 8,
-        top: position.y + 8,
-      });
-    }
-  }, [position]);
+  const buttonStyle =
+    "w-full text-left px-4 py-2 text-sm  hover:bg-gray-700 focus:outline-none focus:bg-gray-700 transition-colors duration-150 ease-in-out";
 
   return (
     <div
       ref={menuRef}
       className="fixed z-50 bg-columnBackgroundColor border border-gray-700 rounded-md shadow-lg"
       style={{
-        left: `${menuPosition.left}px`,
-        top: `${menuPosition.top}px`,
+        left: `${position.x + 8}px`,
+        top: `${position.y + 8}px`,
         maxWidth: "208px",
       }}
     >
@@ -70,11 +57,20 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               onMove(task.id, column);
               onClose();
             }}
-            className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 transition-colors duration-150 ease-in-out"
+            className={`${buttonStyle} text-white`}
           >
             Move to {defaultBoardState.columns[column].name}
           </button>
         ))}
+        <button
+          onClick={() => {
+            onDeleteTask(task.id);
+            onClose();
+          }}
+          className={`${buttonStyle} text-red-500`}
+        >
+          Delete task
+        </button>
       </div>
     </div>
   );

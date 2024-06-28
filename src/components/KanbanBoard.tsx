@@ -131,6 +131,7 @@ const KanbanBoard: React.FC = () => {
           position={contextMenu.position}
           onMove={moveTask}
           onClose={closeContextMenu}
+          onDeleteTask={handleDeleteTask}
         />
       )}
     </div>
