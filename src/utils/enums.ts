@@ -1,5 +1,5 @@
 export enum ColumnTypes {
-    NEW = "new",
+    NEW = "NEW",
     ON_GOING = "ON_GOING",
-    DONE = "done",
+    DONE = "DONE",
 }

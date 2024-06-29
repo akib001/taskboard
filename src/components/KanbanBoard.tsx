@@ -27,41 +27,78 @@ const KanbanBoard: React.FC = () => {
     setContextMenu(null);
   }, []);
 
-  const moveTask = useCallback((taskId: string, targetColumn: ColumnTypes) => {
-    setBoard((prevState) => {
-      const task = prevState.tasks[taskId];
-      const sourceColumn = prevState.columns[task.columnId];
-      const targetColumnObj = prevState.columns[targetColumn];
+  const moveTask = useCallback(
+    (
+      taskId: string,
+      targetColumnId: ColumnTypes,
+      beforeIndex: number | null = null
+    ) => {
+      setBoard((prevState) => {
+        const task = prevState.tasks[taskId];
+        const sourceColumnId = task.columnId;
 
-      // Create an updated task object
-      const updatedTask = {
-        ...task,
-        columnId: targetColumn,
-        // Clear dueDate if moving to ON_GOING column
-        dueDate: targetColumn === ColumnTypes.ON_GOING ? "" : task.dueDate,
-      };
+        if (sourceColumnId === targetColumnId && beforeIndex == null) {
+          // Task is already in the correct position, no changes needed
+          return prevState;
+        }
 
-      return {
-        ...prevState,
-        tasks: {
-          ...prevState.tasks,
-          [taskId]: updatedTask,
-        },
-        columns: {
-          ...prevState.columns,
-          [sourceColumn.id]: {
-            ...sourceColumn,
-            taskIds: sourceColumn.taskIds.filter((id) => id !== taskId),
+        const updatedTask = {
+          ...task,
+          columnId: targetColumnId,
+          dueDate: targetColumnId === ColumnTypes.ON_GOING ? "" : task.dueDate,
+        };
+
+        const updateColumnTaskIds = (
+          columnId: ColumnTypes,
+          taskId: string,
+          beforeIndex: number | null
+        ) => {
+          const filteredIds = prevState.columns[columnId].taskIds.filter(
+            (id) => id !== taskId
+          );
+          if (beforeIndex == null) {
+            return [taskId, ...filteredIds];
+          }
+
+          if (beforeIndex === -1) {
+            return [...filteredIds, taskId];
+          }
+          return [
+            ...filteredIds.slice(0, beforeIndex),
+            taskId,
+            ...filteredIds.slice(beforeIndex),
+          ];
+        };
+
+        return {
+          ...prevState,
+          tasks: {
+            ...prevState.tasks,
+            [taskId]: updatedTask,
           },
-          [targetColumn]: {
-            ...targetColumnObj,
-            taskIds: [taskId, ...targetColumnObj.taskIds],
+          columns: {
+            ...prevState.columns,
+            [sourceColumnId]: {
+              ...prevState.columns[sourceColumnId],
+              taskIds: prevState.columns[sourceColumnId].taskIds.filter(
+                (id) => id !== taskId
+              ),
+            },
+            [targetColumnId]: {
+              ...prevState.columns[targetColumnId],
+              taskIds: updateColumnTaskIds(targetColumnId, taskId, beforeIndex),
+            },
           },
-        },
-      };
-    });
-    closeContextMenu();
-  }, []);
+        };
+      });
+
+      // beforeIndex is null when the task is moved by context menu
+      if (beforeIndex === null) {
+        closeContextMenu();
+      }
+    },
+    [closeContextMenu]
+  );
 
   const handleCreateOrEditTask = (task: ITask) => {
     if (task.id in board.tasks) {
@@ -110,7 +147,7 @@ const KanbanBoard: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px] bg-black">
+    <div className="flex min-h-dvh w-full items-center overflow-x-auto overflow-y-hidden px-10 bg-black">
       <div className="m-auto flex gap-4">
         {board.columnOrder.map((columnId) => (
           <Column
@@ -122,6 +159,7 @@ const KanbanBoard: React.FC = () => {
             createOrEditTask={handleCreateOrEditTask}
             onDeleteTask={handleDeleteTask}
             onContextMenu={handleContextMenu}
+            moveTask={moveTask}
           />
         ))}
       </div>
@@ -129,7 +167,7 @@ const KanbanBoard: React.FC = () => {
         <ContextMenu
           task={contextMenu.task}
           position={contextMenu.position}
-          onMove={moveTask}
+          moveTask={moveTask}
           onClose={closeContextMenu}
           onDeleteTask={handleDeleteTask}
           board={board}

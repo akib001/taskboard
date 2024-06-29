@@ -6,7 +6,7 @@ import { defaultBoardState } from "../utils/constants";
 interface ContextMenuProps {
   task: ITask;
   position: { x: number; y: number };
-  onMove: (taskId: string, targetColumn: ColumnTypes) => void;
+  moveTask: (taskId: string, targetColumnId: ColumnTypes, beforeIndex: number | null) => void;
   onDeleteTask: (taskId: string) => void;
   onClose: () => void;
   board: IBoardState;
@@ -15,7 +15,7 @@ interface ContextMenuProps {
 export const ContextMenu: React.FC<ContextMenuProps> = ({
   task,
   position,
-  onMove,
+  moveTask,
   onClose,
   onDeleteTask,
   board
@@ -55,16 +55,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       }}
     >
       <div className="min-w-44 max-w-52">
-        {menuOptions.map((column) => (
+        {menuOptions.map((columnId) => (
           <button
-            key={column}
+            key={columnId}
             onClick={() => {
-              onMove(task.id, column);
+              moveTask(task.id, columnId, null);
               onClose();
             }}
             className={`${buttonStyle} text-white`}
           >
-            Move to {defaultBoardState.columns[column].name}
+            Move to {defaultBoardState.columns[columnId].name}
           </button>
         ))}
         <button

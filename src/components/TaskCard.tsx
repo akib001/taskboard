@@ -3,6 +3,7 @@ import { ITask } from "../utils/types";
 import { ColumnTypes } from "../utils/enums";
 import MenuIcon from "../assets/MenuIcon";
 import { calculateTimeStatus } from "../utils/helpers";
+import DropIndicator from "./DropIndicator";
 
 interface TaskProps {
   task: ITask;
@@ -10,6 +11,8 @@ interface TaskProps {
   onContextMenu: (event: React.MouseEvent, task: ITask) => void;
   onDelete: (taskId: string) => void;
   isNew?: boolean;
+  handleDragStart: Function;
+  index: number;
 }
 
 const TaskCard: React.FC<TaskProps> = ({
@@ -18,6 +21,8 @@ const TaskCard: React.FC<TaskProps> = ({
   onContextMenu,
   onDelete,
   isNew = false,
+  handleDragStart,
+  index,
 }) => {
   const [isEditing, setIsEditing] = useState(isNew);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -76,8 +81,6 @@ const TaskCard: React.FC<TaskProps> = ({
           ? descriptionRef
           : dueDateRef;
       ref.current?.focus();
-      // adjustTextareaHeight(titleRef.current);
-      // adjustTextareaHeight(descriptionRef.current);
       if (ref.current instanceof HTMLTextAreaElement) {
         ref.current.setSelectionRange(0, ref.current.value.length);
       }
@@ -132,86 +135,91 @@ const TaskCard: React.FC<TaskProps> = ({
     }[timeStatus.urgency];
 
   return (
-    <div
-      ref={cardRef}
-      onContextMenu={handleContextMenu}
-      className={`bg-mainBackgroundColor group border-l-4 p-2.5 flex flex-col text-left rounded-xl hover:ring-2 hover:ring-rose-500 cursor-pointer relative task ${getStatusWiseStyle()}`}
-    >
+    <>
+      <DropIndicator beforeId={String(index)} columnId={task.columnId} />
       <div
-        className="absolute right-1 top-2 cursor-pointer text-xl hidden group-hover:block"
-        onClick={handleContextMenu}
+        ref={cardRef}
+        onContextMenu={handleContextMenu}
+        onDragStart={(e) => handleDragStart(e, task)}
+        draggable
+        className={`bg-mainBackgroundColor group border-l-4 p-2.5 flex flex-col text-left rounded-xl border-transparent border-t-2 border-r-2 border-b-2 hover:border-r-rose-900 hover:border-t-rose-900 hover:border-b-rose-900 hover:bg-gray-950 hover:shadow-sm hover:shadow-neutral-800 cursor-pointer relative task transition-all duration-200 ${getStatusWiseStyle()}`}
       >
-        <MenuIcon />
-      </div>
+        <div
+          className="absolute right-1 top-2 cursor-pointer text-xl hidden group-hover:block"
+          onClick={handleContextMenu}
+        >
+          <MenuIcon />
+        </div>
 
-      {isEditing ? (
-        <>
-          <textarea
-            ref={titleRef}
-            value={task.title}
-            onChange={(e) => handleTextChange(e, "title")}
-            onFocus={() => {
-              adjustTextareaHeight(titleRef.current);
-              adjustTextareaHeight(descriptionRef.current);
-            }}
-            placeholder="Title"
-            className="bg-transparent max-w-[calc(100%-20px)] h-6 outline-none border-none resize-none"
-          />
-          <textarea
-            ref={descriptionRef}
-            value={task.description}
-            placeholder="Description"
-            onChange={(e) => handleTextChange(e, "description")}
-            onFocus={() => {
-              adjustTextareaHeight(titleRef.current);
-              adjustTextareaHeight(descriptionRef.current);
-            }}
-            className="bg-transparent text-gray-400 h-5 mt-1 max-w-[calc(100%-20px)] text-sm outline-none border-none resize-none"
-          />
-          {task.columnId === ColumnTypes.ON_GOING && (
-            <input
-              ref={dueDateRef}
-              type="datetime-local"
-              value={task.dueDate}
-              min={minDateTime}
-              style={{ colorScheme: "dark" }}
-              onChange={(e) =>
-                createOrEditTask({ ...task, dueDate: e.target.value })
-              }
-              className="bg-transparent text-sm mt-1 max-w-52 outline-none border-none"
+        {isEditing ? (
+          <>
+            <textarea
+              ref={titleRef}
+              value={task.title}
+              onChange={(e) => handleTextChange(e, "title")}
+              onFocus={() => {
+                adjustTextareaHeight(titleRef.current);
+                adjustTextareaHeight(descriptionRef.current);
+              }}
+              placeholder="Title"
+              className="bg-transparent placeholder:text-gray-500 max-w-[calc(100%-20px)] h-6 outline-none border-none resize-none"
             />
-          )}
-        </>
-      ) : (
-        <>
-          <p
-            onClick={() => handleFieldClick("title")}
-            className="min-h-6 w-full max-w-[calc(100%-20px)] overflow-hidden whitespace-pre-wrap break-words text-ellipsis cursor-pointer select-none clamp-3"
-          >
-            {task.title}
-          </p>
-          <p
-            onClick={() => handleFieldClick("description")}
-            className="min-h-5 w-full max-w-[calc(100%-20px)] text-sm text-gray-400 mt-1 break-words overflow-hidden whitespace-pre-wrap text-ellipsis cursor-pointer select-none clamp-3"
-          >
-            {task.description}
-          </p>
-          {timeStatus && (
-            <div
-              className="flex items-center mt-2"
-              onClick={() => handleFieldClick("dueDate")}
+            <textarea
+              ref={descriptionRef}
+              value={task.description}
+              placeholder="Description"
+              onChange={(e) => handleTextChange(e, "description")}
+              onFocus={() => {
+                adjustTextareaHeight(titleRef.current);
+                adjustTextareaHeight(descriptionRef.current);
+              }}
+              className="bg-transparent text-gray-400 placeholder:text-gray-500 h-5 mt-1 max-w-[calc(100%-20px)] text-sm outline-none border-none resize-none"
+            />
+            {task.columnId === ColumnTypes.ON_GOING && (
+              <input
+                ref={dueDateRef}
+                type="datetime-local"
+                value={task.dueDate}
+                min={minDateTime}
+                style={{ colorScheme: "dark" }}
+                onChange={(e) =>
+                  createOrEditTask({ ...task, dueDate: e.target.value })
+                }
+                className="bg-transparent text-sm mt-1 max-w-52 outline-none border-none"
+              />
+            )}
+          </>
+        ) : (
+          <>
+            <p
+              onClick={() => handleFieldClick("title")}
+              className="min-h-6 w-full max-w-[calc(100%-20px)] overflow-hidden whitespace-pre-wrap break-words text-ellipsis cursor-pointer select-none clamp-3"
             >
-              <span
-                className={`text-xs font-semibold mr-2 px-2.5 py-0.5 rounded ${chipColorClass} text-white`}
+              {task.title}
+            </p>
+            <p
+              onClick={() => handleFieldClick("description")}
+              className="min-h-5 w-full max-w-[calc(100%-20px)] text-sm text-gray-400 mt-1 break-words overflow-hidden whitespace-pre-wrap text-ellipsis cursor-pointer select-none clamp-3"
+            >
+              {task.description}
+            </p>
+            {timeStatus && (
+              <div
+                className="flex items-center mt-2"
+                onClick={() => handleFieldClick("dueDate")}
               >
-                {timeStatus.chipText}
-              </span>
-              <span className="text-sm text-gray-400">{timeStatus.text}</span>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+                <span
+                  className={`text-xs font-semibold mr-2 px-2.5 py-0.5 rounded ${chipColorClass} text-white`}
+                >
+                  {timeStatus.chipText}
+                </span>
+                <span className="text-sm text-gray-400">{timeStatus.text}</span>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 };
 

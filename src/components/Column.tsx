@@ -4,6 +4,7 @@ import { ColumnTypes } from "../utils/enums";
 import TaskCard from "./TaskCard";
 import { generateId } from "../utils/helpers";
 import AddIcon from "../assets/AddIcon";
+import DropIndicator from "./DropIndicator";
 
 interface ColumnProps {
   column: IColumn;
@@ -11,6 +12,7 @@ interface ColumnProps {
   tasks: ITask[];
   onDeleteTask: (taskId: string) => void;
   onContextMenu: (event: React.MouseEvent, task: ITask) => void;
+  moveTask: (taskId: string, targetColumnId: ColumnTypes, beforeIndex: number | null) => void;
 }
 
 const Column: React.FC<ColumnProps> = ({
@@ -19,6 +21,7 @@ const Column: React.FC<ColumnProps> = ({
   tasks,
   onDeleteTask,
   onContextMenu,
+  moveTask,
 }) => {
   const handleAddTask = () => {
     const newTask: ITask = {
@@ -29,6 +32,84 @@ const Column: React.FC<ColumnProps> = ({
       dueDate: "",
     };
     createOrEditTask(newTask);
+  };
+
+  const handleDragStart = (e: React.DragEvent, task: ITask) => {
+    e.dataTransfer.setData("taskId", task.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    highlightIndicator(e);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    const taskId = e.dataTransfer.getData("taskId");
+    clearHighlights();
+
+    const indicators = getIndicators();
+    const { element } = getNearestIndicator(e, indicators);
+
+    const beforeIndex = element.dataset.before || "-1";
+
+    moveTask(taskId, column.id, Number(beforeIndex));
+  };
+
+  const handleDragLeave = () => {
+    clearHighlights();
+  };
+
+  const clearHighlights = (els?: HTMLElement[]) => {
+    const indicators = els || getIndicators();
+
+    indicators.forEach((i) => {
+      i.style.opacity = "0";
+    });
+  };
+
+  const highlightIndicator = (e: React.DragEvent) => {
+    const indicators = getIndicators();
+
+    clearHighlights(indicators);
+
+    const el = getNearestIndicator(e, indicators);
+
+    el.element.style.opacity = "1";
+  };
+
+  const getNearestIndicator = (
+    e: React.DragEvent,
+    indicators: HTMLElement[]
+  ) => {
+    const DISTANCE_OFFSET = 50;
+
+    const el = indicators.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+
+        const offset = e.clientY - (box.top + DISTANCE_OFFSET);
+
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+        element: indicators[indicators.length - 1],
+      }
+    );
+
+    return el;
+  };
+
+  const getIndicators = () => {
+    return Array.from(
+      document.querySelectorAll(
+        `[data-column="${column.id}"]`
+      ) as unknown as HTMLElement[]
+    );
   };
 
   return (
@@ -42,7 +123,12 @@ const Column: React.FC<ColumnProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto">
+      <div
+        onDragOver={handleDragOver}
+        onDrop={handleDragEnd}
+        onDragLeave={handleDragLeave}
+        className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto"
+      >
         {column.id === ColumnTypes.NEW && (
           <div
             onClick={handleAddTask}
@@ -53,16 +139,19 @@ const Column: React.FC<ColumnProps> = ({
           </div>
         )}
 
-        {tasks.map((task) => (
+        {tasks.map((task, index) => (
           <TaskCard
             key={task.id}
             task={task}
             createOrEditTask={createOrEditTask}
             onContextMenu={onContextMenu}
             onDelete={onDeleteTask}
+            handleDragStart={handleDragStart}
             isNew={!task.title && !task.description && !task.dueDate}
+            index={index}
           />
         ))}
+        <DropIndicator beforeId={null} columnId={column.id} />
       </div>
     </div>
   );
