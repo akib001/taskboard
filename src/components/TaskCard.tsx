@@ -68,6 +68,7 @@ const TaskCard: React.FC<TaskProps> = ({
 
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault();
+    if (isEditing) return;
     onContextMenu(event, task);
   };
 
@@ -144,12 +145,14 @@ const TaskCard: React.FC<TaskProps> = ({
         draggable
         className={`bg-mainBackgroundColor group border-l-4 p-2.5 flex flex-col text-left rounded-xl border-transparent border-t-2 border-r-2 border-b-2 hover:border-r-rose-900 hover:border-t-rose-900 hover:border-b-rose-900 hover:bg-gray-950 hover:shadow-sm hover:shadow-neutral-800 cursor-pointer relative task transition-all duration-200 ${getStatusWiseStyle()}`}
       >
-        <div
-          className="absolute right-1 top-2 cursor-pointer text-xl hidden group-hover:block"
-          onClick={handleContextMenu}
-        >
-          <MenuIcon />
-        </div>
+        {!isEditing && (
+          <div
+            className="absolute right-1 top-2 cursor-pointer text-xl hidden group-hover:block"
+            onClick={handleContextMenu}
+          >
+            <MenuIcon />
+          </div>
+        )}
 
         {isEditing ? (
           <>
